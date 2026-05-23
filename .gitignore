@@ -19,3 +19,9 @@
 
 # temp
 temp/*
+
+# data
+data/
+
+# pretrained
+Qwen2.5-VL-3B-Instruct/
