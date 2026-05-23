@@ -74,7 +74,7 @@ class ActionTokenizer:
                 action_token_ids.append(int(action.split('_')[1].replace('>', '')))
         
         # print(action_token_ids)
-        action_token_ids = torch.tensor(action_token_ids)
+        action_token_ids = torch.tensor(action_token_ids, dtype=torch.long)
 
         try:
             action_tokens = self.code_book[action_token_ids]
@@ -82,7 +82,7 @@ class ActionTokenizer:
             print(f"Error type: {type(e).__name__}")
             print(action_token_ids)
             print(f"Error message: {str(e)}")
-            return []
+            return torch.zeros(1, 1, 3)
 
         time_steps = action_tokens.shape[0]
         traj = self.rollout(action_tokens, time_steps=time_steps)
