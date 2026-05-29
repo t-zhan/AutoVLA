@@ -17,8 +17,8 @@ model:
     ignore_index: -100
     assistant_id: [151644, 77091]
   video:
-    min_pixels: 109760
-    max_pixels: 109760
+    min_pixels: 25088
+    max_pixels: 25088
 
 # training
 training:
@@ -31,16 +31,16 @@ training:
   lr_step_frequency: 2000
   lr_step_gamma: 0.98
   train_sample_size: null
-  accumulate_grad_batches: 4
+  accumulate_grad_batches: 1
 
 data:
   train:
     json_dataset_path: /home/autodrive/Projects/VEGA.worktrees/agents-autovla-sft-autovla-1-nuscenes-train-split-2-a47712c2/third_party/AutoVLA/data/nuscenes_train
-    sensor_data_path: /home/autodrive/Projects/PublicDatasets/NuScenes
+    sensor_data_path: /home/autodrive/Projects/VEGA.worktrees/agents-autovla-sft-autovla-1-nuscenes-train-split-2-a47712c2/third_party/AutoVLA
 
   val:
     json_dataset_path: /home/autodrive/Projects/VEGA.worktrees/agents-autovla-sft-autovla-1-nuscenes-train-split-2-a47712c2/third_party/AutoVLA/data/nuscenes_val
-    sensor_data_path: /home/autodrive/Projects/PublicDatasets/NuScenes
+    sensor_data_path: /home/autodrive/Projects/VEGA.worktrees/agents-autovla-sft-autovla-1-nuscenes-train-split-2-a47712c2/third_party/AutoVLA
 
 inference:
   batch_size: 1

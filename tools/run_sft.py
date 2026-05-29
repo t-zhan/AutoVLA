@@ -70,7 +70,7 @@ if __name__ == "__main__":
     val_dataset = SFTDataset(config['data']['val'], config['model'], processor, using_cot=using_cot)
 
     model = SFTAutoVLA(config)
-    model.autovla.vlm.model.gradient_checkpointing_enable() # enable gradient checkpointing to save memory
+    model.autovla.vlm.model.gradient_checkpointing_enable()
 
     # checkpoint_path = Path(".ckpt")
     # state_dict = torch.load(checkpoint_path)['state_dict']
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         accumulate_grad_batches=config['training']['accumulate_grad_batches'],
         strategy=FSDPStrategy(
             auto_wrap_policy=wrap_policy,
-            cpu_offload=False,
+            cpu_offload=True,
             # Mixed precision training
             mixed_precision=MixedPrecision(
                 param_dtype=torch.bfloat16,
