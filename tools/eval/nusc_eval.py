@@ -117,6 +117,9 @@ def main():
         pred_trajectory, output_text = model.autovla.predict(input_features)
         if pred_trajectory == [] or len(pred_trajectory) == 0:
             continue
+        if pred_trajectory.shape[0] < 6:
+            print(f"Warning: predicted trajectory has only {pred_trajectory.shape[0]} steps (need 6), skipping sample {idx}")
+            continue
         
         if args.verbose:
             print(f"Output: {output_text}")
