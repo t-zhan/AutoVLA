@@ -2,7 +2,7 @@ name: qwen2.5-vl-3B-nusc-local
 description: AutoVLA local eval with absolute paths
 
 model:
-  use_cot: false
+  use_cot: true
   pretrained_model_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/Qwen2.5-VL-3B-Instruct
   train_vision_backbone: false
   train_lm_backbone: true
