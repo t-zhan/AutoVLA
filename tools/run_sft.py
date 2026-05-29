@@ -44,6 +44,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint to resume training from")
     args = parser.parse_args()
     seed_everything(args.seed)
 
@@ -72,9 +73,11 @@ if __name__ == "__main__":
     model = SFTAutoVLA(config)
     model.autovla.vlm.model.gradient_checkpointing_enable()
 
-    # checkpoint_path = Path(".ckpt")
-    # state_dict = torch.load(checkpoint_path)['state_dict']
-    # model.load_state_dict(state_dict)
+    # Warm-start from resume checkpoint (loads model weights; optimizer starts fresh)
+    if args.resume:
+        ckpt = torch.load(args.resume, map_location='cpu')
+        model.load_state_dict(ckpt['state_dict'], strict=False)
+        print(f"[Resume] Loaded weights from {args.resume} (epoch={ckpt.get('epoch', '?')})")
     
     # Create data collator with config parameters
     data_collator = DataCollator(

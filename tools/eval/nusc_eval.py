@@ -74,6 +74,9 @@ def main():
     model.autovla.vlm.resize_token_embeddings(len(processor.tokenizer))
     
     state_dict = torch.load(checkpoint_path, map_location=args.device)['state_dict']
+    # Strip 'autovla.' prefix if present (PL FSDP checkpoint format)
+    if any(k.startswith('autovla.') for k in state_dict):
+        state_dict = {k[len('autovla.'):]: v for k, v in state_dict.items() if k.startswith('autovla.')}
     model.autovla.load_state_dict(state_dict, strict=False)
 
     model.to(args.device)
