@@ -5,8 +5,10 @@ from setuptools import setup, find_packages
 script_folder = os.path.dirname(os.path.realpath(__file__))
 os.chdir(script_folder)
 
-with open("requirements.txt") as f:
-    requirements = f.read().splitlines()
+with open("requirements-compiled.txt") as f:
+    lines = f.read().splitlines()
+requirements = [l for l in lines
+                if l and not l.startswith(("#", "--"))]
 
 setup(
     name="AutoVLA",

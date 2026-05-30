@@ -73,11 +73,16 @@ if __name__ == "__main__":
     model = SFTAutoVLA(config)
     model.autovla.vlm.model.gradient_checkpointing_enable()
 
-    # Warm-start from resume checkpoint (loads model weights; optimizer starts fresh)
+    # Resume checkpoint (full state: weights, optimizer, LR scheduler, epoch)
+    ckpt_path = None
     if args.resume:
         ckpt = torch.load(args.resume, map_location='cpu')
-        model.load_state_dict(ckpt['state_dict'], strict=False)
-        print(f"[Resume] Loaded weights from {args.resume} (epoch={ckpt.get('epoch', '?')})")
+        if 'optimizer_states' in ckpt:
+            ckpt_path = args.resume   # full resume via Lightning
+            print(f"[Resume] Full resume from {args.resume} (epoch={ckpt.get('epoch', '?')})")
+        else:
+            model.load_state_dict(ckpt['state_dict'], strict=False)
+            print(f"[Resume] Weight-only warm-start from {args.resume} (optimizer starts fresh)")
     
     # Create data collator with config parameters
     data_collator = DataCollator(
@@ -144,7 +149,7 @@ if __name__ == "__main__":
                 dirpath=f"{save_dir}",
                 filename="epoch={epoch}-loss={val_loss:.4f}",
                 auto_insert_metric_name=False,
-                save_weights_only=True,
+                save_weights_only=False,
                 every_n_epochs=1,
             ),
             EarlyStopping(monitor="val_loss", patience=10, mode="min"),
@@ -159,4 +164,4 @@ if __name__ == "__main__":
         # limit_val_batches=0.001
     )
     torch.cuda.empty_cache()
-    trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
+    trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data, ckpt_path=ckpt_path)
