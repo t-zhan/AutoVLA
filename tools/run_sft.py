@@ -10,9 +10,11 @@ import yaml
 import torch
 import argparse
 import functools
+import os
 import pytorch_lightning as pl
 
-from pytorch_lightning.loggers import CSVLogger
+import swanlab
+from swanlab.integration.pytorch_lightning import SwanLabLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks import EarlyStopping
 from pytorch_lightning.callbacks import LearningRateMonitor
@@ -75,6 +77,7 @@ if __name__ == "__main__":
 
     # Resume checkpoint (full state: weights, optimizer, LR scheduler, epoch)
     ckpt_path = None
+    swanlab_id = None
     if args.resume:
         ckpt = torch.load(args.resume, map_location='cpu')
         if 'optimizer_states' in ckpt:
@@ -83,6 +86,11 @@ if __name__ == "__main__":
         else:
             model.load_state_dict(ckpt['state_dict'], strict=False)
             print(f"[Resume] Weight-only warm-start from {args.resume} (optimizer starts fresh)")
+        # Extract old SwanLab run ID from checkpoint path (e.g. run-xxx/files/ckpt -> run-xxx -> id)
+        run_dir_name = Path(args.resume).resolve().parent.parent.name
+        if run_dir_name.startswith("run-"):
+            swanlab_id = run_dir_name.split("-")[-1]
+            print(f"[Resume] Will continue SwanLab run {swanlab_id}")
     
     # Create data collator with config parameters
     data_collator = DataCollator(
@@ -116,13 +124,28 @@ if __name__ == "__main__":
     )
 
     current_date = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    save_dir = f"runs/sft/{current_date}"
+
+    # Pre-init SwanLab on rank 0 to get the run directory for checkpoint placement.
+    # FSDP spawns subprocesses that re-execute this script; guard against multi-init.
+    local_rank = int(os.environ.get("LOCAL_RANK", 0))
+    if local_rank == 0:
+        run = swanlab.init(
+            project="autovla",
+            experiment_name="sft-" + current_date,
+            logdir="runs/sft",
+            id=swanlab_id,
+            resume="allow",
+        )
+        run_dir = run.public.run_dir  # e.g. runs/sft/run-20260602_015001-xxxxx
+    else:
+        run_dir = "runs/sft"  # unused on non-rank-0, only rank 0 writes checkpoints
     
     trainer = pl.Trainer(
         num_nodes=1,
         max_epochs=config['training']['epochs'],
         accelerator="gpu",
         devices='auto',
+        log_every_n_steps=1,
         accumulate_grad_batches=config['training']['accumulate_grad_batches'],
         strategy=FSDPStrategy(
             auto_wrap_policy=wrap_policy,
@@ -146,7 +169,7 @@ if __name__ == "__main__":
                 monitor="val_loss",
                 mode="min",
                 save_top_k=3,
-                dirpath=f"{save_dir}",
+                dirpath=os.path.join(run_dir, "files"),
                 filename="epoch={epoch}-loss={val_loss:.4f}",
                 auto_insert_metric_name=False,
                 save_weights_only=False,
@@ -158,7 +181,7 @@ if __name__ == "__main__":
         gradient_clip_algorithm = 'value',
         gradient_clip_val = 1.0,
 
-        logger=CSVLogger(save_dir=f"{save_dir}"),
+        logger=SwanLabLogger(project="autovla", experiment_name="sft-" + current_date, logdir="runs/sft", id=swanlab_id),
         enable_model_summary=True,
 
         # limit_val_batches=0.001

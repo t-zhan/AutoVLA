@@ -24,7 +24,7 @@ temp/*
 data/
 
 # pretrained
-Qwen2.5-VL-3B-Instruct/
+pretrained/
 
 # output
 planning_table.txt

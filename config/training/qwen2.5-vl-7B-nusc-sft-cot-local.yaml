@@ -1,0 +1,52 @@
+name: qwen2.5-vl-7B-nusc-sft-cot-local
+description: AutoVLA SFT on nuScenes train split with CoT (4x RTX 3090, local paths)
+
+# model
+model:
+  use_cot: true
+  pretrained_model_path: pretrained/Qwen2.5-VL-7B-Instruct
+  train_vision_backbone: false
+  train_lm_backbone: true
+  codebook_cache_path: "codebook_cache/agent_vocab.pkl"
+  trajectory:
+    num_poses: 10
+    interval_length: 0.5
+    time_horizon: 5.0
+  tokens:
+    action_start_id: 151665
+    ignore_index: -100
+    assistant_id: [151644, 77091]
+  video:
+    min_pixels: 25088
+    max_pixels: 25088
+
+# training
+training:
+  batch_size: 2
+  learning_rate: 2.0e-5
+  epochs: 10
+  num_workers: 16
+  weight_decay: 0.01
+  lr_warmup_step: 500
+  lr_step_frequency: 2000
+  lr_step_gamma: 0.98
+  train_sample_size: null
+  accumulate_grad_batches: 8
+
+data:
+  train:
+    json_dataset_path: data/nuscenes_train
+    sensor_data_path: .
+
+  val:
+    json_dataset_path: data/nuscenes_val
+    sensor_data_path: .
+
+inference:
+  batch_size: 1
+  num_workers: 2
+  sample:
+    max_length: 2048
+    temperature: 0.8
+    top_k: 20
+    top_p: 0.2
