@@ -20,12 +20,12 @@
 # temp
 temp/*
 
-# data
-data/
+# data (symlink or dir)
+data
 
 # pretrained
 pretrained/
 
 # output
 planning_table.txt
-runs/
+runs
