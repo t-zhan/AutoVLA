@@ -2,7 +2,7 @@ name: qwen2.5-vl-3B-nusc-local
 description: AutoVLA local eval with absolute paths
 
 model:
-  use_cot: true
+  use_cot: false
   pretrained_model_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/Qwen2.5-VL-3B-Instruct
   train_vision_backbone: false
   train_lm_backbone: true
@@ -33,11 +33,11 @@ training:
 
 data:
   train:
-    json_dataset_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/data/nuscenes_val
-    sensor_data_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/data/nuscenes
+    json_dataset_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/data/nuscenes_train
+    sensor_data_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA
   val:
     json_dataset_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/data/nuscenes_val
-    sensor_data_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA/data/nuscenes
+    sensor_data_path: /home/autodrive/Projects/VEGA/third_party/AutoVLA
 
 inference:
   batch_size: 1
